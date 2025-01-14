@@ -1,0 +1,18 @@
+{
+  "name": "captivai",
+  "version": "1.0.0",
+  "description": "Plataforma innovadora impulsada por inteligencia artificial para agencias de marketing, diseñada para optimizar la captación de leads a través de formularios inteligentes e incrustables. Proporciona análisis automatizados de rendimiento web con recomendaciones prácticas generadas por IA.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
