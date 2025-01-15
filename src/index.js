@@ -1,9 +1,11 @@
+// Importar dependencias
 require('dotenv').config();
-console.log('Clave de API:', process.env.PAGESPEED_API_KEY);
-
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const { sendEmail } = require('./emailService');
+const { generateReport } = require('./openai');
+const connectDB = require('./database'); // Importa tu módulo de conexión a MongoDB
 
 const app = express();
 app.use(cors());
@@ -12,75 +14,112 @@ app.use(express.json());
 // Ruta raíz para verificar que el servidor esté funcionando
 app.get('/', (req, res) => res.send('Servidor funcionando correctamente'));
 
-// Endpoint para analizar URLs
-app.post('/api/analyze', async (req, res) => {
-    const { url } = req.body;
-
-    if (!url) {
-        return res.status(400).json({ error: 'URL es requerida' });
-    }
-
+// Función para guardar análisis en MongoDB
+async function saveAnalysisToDB(data) {
     try {
-        const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${process.env.PAGESPEED_API_KEY}`;
-        const response = await axios.get(apiUrl);
-
-        // Extraer datos importantes
-        const { lighthouseResult } = response.data;
-
-        const filteredData = {
-            url: response.data.id || 'No disponible',
-            performanceScore: lighthouseResult?.categories?.performance?.score * 100 || 0, // Puntuación general
-            metrics: {
-                firstContentfulPaint: lighthouseResult?.audits?.['first-contentful-paint']?.displayValue || 'No disponible',
-                largestContentfulPaint: lighthouseResult?.audits?.['largest-contentful-paint']?.displayValue || 'No disponible',
-                speedIndex: lighthouseResult?.audits?.['speed-index']?.displayValue || 'No disponible',
-                totalBlockingTime: lighthouseResult?.audits?.['total-blocking-time']?.displayValue || 'No disponible',
-                cumulativeLayoutShift: lighthouseResult?.audits?.['cumulative-layout-shift']?.displayValue || 'No disponible'
-            },
-            opportunities: lighthouseResult?.audits?.['uses-optimized-images']?.details?.items?.map(item => ({
-                url: item.url,
-                wastedBytes: item.wastedBytes,
-                wastedMs: item.wastedMs || 'No disponible'
-            })) || [],
-            totalPageSize: lighthouseResult?.audits?.['total-byte-weight']?.displayValue || 'No disponible',
-            estimatedLoadTime: lighthouseResult?.audits?.['interactive']?.displayValue || 'No disponible',
-            additionalRecommendations: lighthouseResult?.audits?.['uses-long-cache-ttl']?.details?.items?.map(item => ({
-                resource: item.url,
-                cacheStatus: item.cacheLifetimeMs || 'No disponible'
-            })) || []
-        };
-
-        res.status(200).json(filteredData);
-
+        const db = await connectDB();
+        const collection = db.collection('analyses'); // Cambia 'analyses' por el nombre de tu colección
+        const result = await collection.insertOne(data);
+        console.log('✅ Datos guardados en MongoDB:', result);
     } catch (error) {
-        console.error('Error al conectar con PageSpeed Insights:', error.message);
-        res.status(500).json({ error: 'Error al analizar la URL' });
-    }
-});
-
-const { MongoClient } = require('mongodb');
-require('dotenv').config();
-
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
-
-async function connectToDatabase() {
-    try {
-        await client.connect();
-        console.log("✅ Conexión a MongoDB Atlas exitosa");
-
-        // Puedes listar las bases de datos disponibles
-        const databasesList = await client.db().admin().listDatabases();
-        console.log("Bases de datos disponibles:");
-        databasesList.databases.forEach(db => console.log(` - ${db.name}`));
-    } catch (error) {
-        console.error("❌ Error conectando a MongoDB:", error.message);
-        process.exit(1); // Termina el proceso si la conexión falla
+        console.error('❌ Error al guardar los datos en MongoDB:', error.message);
     }
 }
 
-connectToDatabase();
+// Endpoint para el flujo completo
+app.post('/api/full-report', async (req, res) => {
+    const { url, recipientEmail, recipientName } = req.body;
 
+    // Validación de datos
+    if (!url || !recipientEmail || !recipientName) {
+        return res.status(400).json({ error: 'URL, correo y nombre del destinatario son requeridos.' });
+    }
+
+    try {
+        // 1. Analizar la URL con PageSpeed Insights
+        console.log('🔍 Analizando la URL con PageSpeed Insights...');
+        const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${process.env.PAGESPEED_API_KEY}`;
+        const pageSpeedResponse = await axios.get(apiUrl);
+
+        const performanceData = {
+            url: pageSpeedResponse.data.id || 'No disponible',
+            performanceScore: pageSpeedResponse.data.lighthouseResult.categories.performance.score * 100 || 0,
+            metrics: {
+                firstContentfulPaint: pageSpeedResponse.data.lighthouseResult.audits['first-contentful-paint']?.displayValue || 'No disponible',
+                largestContentfulPaint: pageSpeedResponse.data.lighthouseResult.audits['largest-contentful-paint']?.displayValue || 'No disponible',
+                speedIndex: pageSpeedResponse.data.lighthouseResult.audits['speed-index']?.displayValue || 'No disponible',
+                totalBlockingTime: pageSpeedResponse.data.lighthouseResult.audits['total-blocking-time']?.displayValue || 'No disponible',
+                cumulativeLayoutShift: pageSpeedResponse.data.lighthouseResult.audits['cumulative-layout-shift']?.displayValue || 'No disponible',
+            },
+        };
+
+        console.log('✅ Análisis completado. Datos obtenidos:', performanceData);
+
+        // 2. Generar el informe con OpenAI
+        console.log('📝 Generando el informe con OpenAI...');
+        const prompt = `
+        Aquí tienes los datos de rendimiento para la URL: ${url}.
+        Puntuación general: ${performanceData.performanceScore}.
+        Métricas clave:
+        - First Contentful Paint: ${performanceData.metrics.firstContentfulPaint}.
+        - Largest Contentful Paint: ${performanceData.metrics.largestContentfulPaint}.
+        - Speed Index: ${performanceData.metrics.speedIndex}.
+        - Total Blocking Time: ${performanceData.metrics.totalBlockingTime}.
+        - Cumulative Layout Shift: ${performanceData.metrics.cumulativeLayoutShift}.
+        
+        Basándote en esta información, genera un informe profesional que incluya:
+        1. Resumen del rendimiento general.
+        2. Análisis detallado de las métricas clave.
+        3. Recomendaciones específicas y prácticas para mejorar el rendimiento.
+        `;
+        const report = await generateReport(prompt);
+
+        // 3. Formatear el informe para la plantilla
+        const formattedReport = `
+            <h3>Informe de Rendimiento para ${url}</h3>
+            <ol>
+                <li><strong>Resumen del rendimiento general:</strong>
+                    <p>${report.split('\n\n')[0]}</p>
+                </li>
+                <li><strong>Análisis detallado de las métricas clave:</strong>
+                    <ul>
+                        ${report.split('\n\n')[1]
+                          .split('\n')
+                          .map(line => line.trim() ? `<li>${line.trim()}</li>` : '')
+                          .join('')}
+                    </ul>
+                </li>
+                <li><strong>Recomendaciones específicas y prácticas:</strong>
+                    <p>${report.split('\n\n')[2]}</p>
+                </li>
+            </ol>
+        `;
+
+        console.log('✅ Informe generado:', formattedReport);
+
+        // 4. Enviar el informe por correo
+        await sendEmail(recipientEmail, recipientName, url, formattedReport);
+        console.log('✅ Correo enviado exitosamente.');
+
+        // 5. Guardar datos en MongoDB
+        const analysisData = {
+            url,
+            recipientEmail,
+            recipientName,
+            performanceData,
+            report,
+            timestamp: new Date(),
+        };
+        await saveAnalysisToDB(analysisData);
+
+        console.log('✅ Datos guardados en la base de datos.');
+
+        res.status(200).json({ message: 'Flujo completado con éxito. Informe enviado y datos guardados en la base de datos.' });
+    } catch (error) {
+        console.error('❌ Error en el flujo:', error.message);
+        res.status(500).json({ error: 'Error en el flujo: ' + error.message });
+    }
+});
 
 // Configuración del puerto
 const PORT = process.env.PORT || 3000;
