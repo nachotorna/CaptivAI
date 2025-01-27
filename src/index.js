@@ -65,12 +65,13 @@ function generateRecommendationsHtml(recommendations) {
 // Ruta raíz para verificar que el servidor esté funcionando
 app.get('/', (req, res) => res.send('Servidor funcionando correctamente'));
 
+
 // Endpoint para el flujo completo
 app.post('/api/full-report', async (req, res) => {
-    const { url, recipientEmail, recipientName } = req.body;
+    const { url, recipientEmail, recipientName, clientEmail } = req.body;
 
     // Validación de datos
-    if (!url || !recipientEmail || !recipientName) {
+    if (!url || !recipientEmail || !recipientName || !clientEmail) {
         return res.status(400).json({ error: 'URL, correo y nombre del destinatario son requeridos.' });
     }
 
@@ -125,14 +126,6 @@ El informe debe incluir los siguientes apartados:
 
 3. **Recomendaciones específicas** (en este formato estructurado):
    - **Título de la recomendación:** Descripción breve y clara de la acción a tomar.
-
-   Ejemplo de recomendaciones:
-   - **Optimizar imágenes:** Comprimir imágenes para reducir los tiempos de carga.
-   - **Minificar CSS y JS:** Reducir el tamaño de los archivos CSS y JavaScript eliminando espacios innecesarios.
-   - **Habilitar almacenamiento en caché del navegador:** Configurar el almacenamiento en caché para mejorar los tiempos de carga en visitas repetidas.
-   - **Reducir scripts de terceros:** Evaluar y eliminar scripts de terceros innecesarios para mejorar el rendimiento.
-
-Por favor, sigue esta estructura para que sea fácil de leer y entender por un público no técnico.
 `;
 
         const report = await generateReport(prompt);
@@ -212,10 +205,15 @@ Por favor, sigue esta estructura para que sea fácil de leer y entender por un p
         console.log('✅ Informe generado:', formattedReport);
         res.write('📩 Enviando el informe por correo...\n');
 
-        // 5. Enviar el informe por correo
+        // 5. Enviar el informe al usuario
         await sendEmail(recipientEmail, recipientName, url, formattedReport);
-        console.log('✅ Correo enviado exitosamente.');
-        res.write('✅ Correo enviado exitosamente.\n');
+        console.log('✅ Correo enviado al usuario exitosamente.');
+        res.write('✅ Correo enviado al usuario exitosamente.\n');
+        
+        // 6. Enviar el correo a tu cliente utilizando el correo extraído del iframe
+        await sendClientEmail(clientEmail, recipientName, url, recipientEmail);
+        console.log('✅ Correo enviado al cliente exitosamente.');
+        res.write('✅ Correo enviado al cliente exitosamente.\n');
         
     } catch (error) {
         console.error('❌ Error en el flujo:', error.message);
@@ -224,6 +222,11 @@ Por favor, sigue esta estructura para que sea fácil de leer y entender por un p
         res.end();
     }
 });
+
+
+// Configuración del puerto
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
 
 // Configuración del puerto
 const PORT = process.env.PORT || 3000;
