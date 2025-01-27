@@ -213,6 +213,13 @@ Por favor, sigue esta estructura para que sea fácil de leer y entender por un p
         console.log('✅ Informe generado:', formattedReport);
         res.write('📩 Enviando el informe por correo...\n');
 
+        // Obtén el correo desde la URL del iframe
+        const urlParams = new URLSearchParams(window.location.search);
+        let clientEmail = urlParams.get('email'); // Esto obtendrá "ignaciotornatti%40gmail.com"
+        
+        // Decodifica el correo
+        clientEmail = decodeURIComponent(clientEmail); 
+        
         // 5. Enviar el informe al usuario
         await sendEmail(recipientEmail, recipientName, url, formattedReport);
         console.log('✅ Correo enviado al usuario exitosamente.');
