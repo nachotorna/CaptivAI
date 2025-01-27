@@ -3,156 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generar Informe</title>
+    <title>CaptivAI: Transforma tus Leads en Clientes</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
             padding: 20px;
             background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
         }
+
+        h1, h2, h3 {
+            color: #007bff;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
         form {
-            margin-bottom: 20px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             max-width: 400px;
         }
-        input, button {
-            margin: 10px 0;
-            padding: 10px;
+
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        form input, form button {
             width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            font-size: 14px;
         }
-        button {
-            background-color: #000;
+
+        form button {
+            background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #333;
-        }
-        #logs {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            max-width: 400px;
-        }
-        .step {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        .step span {
-            margin-left: 10px;
-        }
-        .icon {
-            font-size: 16px;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background-color: #ddd;
-            color: white;
-        }
-        .icon.complete {
-            background-color: #ffffff;
-        }
-        .icon.in-progress {
-            background-color: #ffffff;
-        }
 
-        /* Spinner styles */
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #ffffff;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+        form button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Contáctanos</h1>
-    <form id="reportForm">
-        <label for="name">Nombre</label>
-        <input type="text" id="name" name="name" placeholder="Tu nombre" required />
+    <header>
+        <h1>CaptivAI: Transforma tus Leads en Clientes</h1>
+        <p>La herramienta definitiva para agencias de marketing que buscan captar clientes de forma efectiva e innovadora.</p>
+    </header>
 
-        <label for="url">tu web</label>
-        <input type="url" id="url" name="url" placeholder="https://example.com" required />
+    <main>
+        <section class="section">
+            <h2>Cómo funciona CaptivAI</h2>
+            <ol>
+                <li>Integra un formulario en tu sitio web donde los usuarios puedan ingresar su URL y correo electrónico.</li>
+                <li>CaptivAI analiza la página web utilizando Google PageSpeed Insights y genera un informe profesional en minutos con la ayuda de inteligencia artificial.</li>
+                <li>El informe es enviado automáticamente al cliente con recomendaciones claras y prácticas.</li>
+                <li>Tu agencia también recibe notificaciones sobre cada lead captado, con detalles del cliente.</li>
+            </ol>
+        </section>
 
-        <label for="email">Email *</label>
-        <input type="email" id="email" name="email" placeholder="Tu correo electrónico" required />
+        <section class="section">
+            <h2>Prueba CaptivAI</h2>
+            <p>Descubre cómo CaptivAI puede transformar la captación de leads para tu agencia. Rellena el formulario a continuación y obtén un análisis inmediato de tu página web.</p>
 
-        <button type="submit">Enviar</button>
-    </form>
+            <form id="testForm">
+                <label for="name">Nombre</label>
+                <input type="text" id="name" name="name" placeholder="Tu nombre" required />
 
-    <h2>Progreso:</h2>
-    <div id="logs">
-        <div class="step" id="step-1">
-            <div class="icon" id="icon-1"></div>
-            <span>Analizando la URL con PageSpeed Insights...</span>
-        </div>
-        <div class="step" id="step-2">
-            <div class="icon" id="icon-2"></div>
-            <span>Generando el informe con OpenAI...</span>
-        </div>
-        <div class="step" id="step-3">
-            <div class="icon" id="icon-3"></div>
-            <span>Informe generado</span>
-        </div>
-        <div class="step" id="step-4">
-            <div class="icon" id="icon-4"></div>
-            <span>Correo enviado exitosamente</span>
-        </div>
-    </div>
+                <label for="url">Tu Web</label>
+                <input type="url" id="url" name="url" placeholder="https://example.com" required />
+
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" name="email" placeholder="Tu correo electrónico" required />
+
+                <button type="submit">Probar ahora</button>
+            </form>
+        </section>
+
+        <section class="section">
+            <h2>Genera un Formulario Incrustable</h2>
+            <p>Permite que tus clientes también utilicen CaptivAI integrando nuestro formulario en sus propias páginas web. Genera el código del iframe con solo un clic:</p>
+
+            <form id="iframeForm">
+                <label for="clientEmail">Correo Electrónico del Cliente</label>
+                <input type="email" id="clientEmail" name="clientEmail" placeholder="Correo para recibir notificaciones" required />
+
+                <button type="button" id="generateIframeButton">Generar iframe</button>
+            </form>
+
+            <h3>Tu iframe:</h3>
+            <textarea id="iframeCode" readonly style="width: 100%; height: 80px;"></textarea>
+        </section>
+    </main>
+
+    <footer>
+        <p>Tecnología desarrollada por <strong>Labtorstudio 🤍</strong></p>
+    </footer>
 
     <script>
-        const form = document.getElementById('reportForm');
-        const steps = [
-            { id: 'step-1', icon: 'icon-1' },
-            { id: 'step-2', icon: 'icon-2' },
-            { id: 'step-3', icon: 'icon-3' },
-            { id: 'step-4', icon: 'icon-4' },
-        ];
-
-        function updateStep(stepIndex, status) {
-            const step = steps[stepIndex];
-            const iconElement = document.getElementById(step.icon);
-
-            if (status === 'in-progress') {
-                // Add spinner animation
-                iconElement.innerHTML = '<div class="spinner"></div>';
-            } else if (status === 'complete') {
-                // Remove spinner and show success icon
-                iconElement.innerHTML = '✅';
-                iconElement.classList.add('complete');
-            }
-        }
-
-        form.addEventListener('submit', async (e) => {
+        // Enviar prueba a CaptivAI
+        document.getElementById('testForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const url = document.getElementById('url').value;
-
-            // Reset progress
-            steps.forEach((step, index) => updateStep(index, 'in-progress'));
 
             try {
                 const response = await fetch('https://captivai.onrender.com/api/full-report', {
@@ -162,25 +146,26 @@
                 });
 
                 if (response.ok) {
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder();
-
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-
-                        const logs = decoder.decode(value).trim();
-                        if (logs.includes('PageSpeed Insights')) updateStep(0, 'complete');
-                        if (logs.includes('OpenAI')) updateStep(1, 'complete');
-                        if (logs.includes('Informe generado')) updateStep(2, 'complete');
-                        if (logs.includes('Correo enviado')) updateStep(3, 'complete');
-                    }
+                    alert('¡Informe generado y enviado con éxito!');
                 } else {
-                    throw new Error('Error en el servidor');
+                    throw new Error('Error al generar el informe.');
                 }
             } catch (error) {
-                alert('Hubo un error: ' + error.message);
+                alert('Hubo un problema: ' + error.message);
             }
+        });
+
+        // Generar iframe
+        document.getElementById('generateIframeButton').addEventListener('click', () => {
+            const clientEmail = document.getElementById('clientEmail').value;
+
+            if (!clientEmail) {
+                alert('Por favor, introduce un correo electrónico válido.');
+                return;
+            }
+
+            const iframeCode = `<iframe src="https://nachotorna.github.io?email=${encodeURIComponent(clientEmail)}" width="600" height="400" frameborder="0"></iframe>`;
+            document.getElementById('iframeCode').value = iframeCode;
         });
     </script>
 </body>
